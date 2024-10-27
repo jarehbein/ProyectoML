@@ -18,10 +18,10 @@ import os
 
 def download_dataset_from_kaggle():
     # Verificar si el archivo ya está descargado
-    csv_file_path = 'data/books.csv'  # Ajusta el nombre del archivo CSV
+    csv_file_path = 'data/goodreads_data.csv'  # Ajusta el nombre del archivo CSV
     if not os.path.exists(csv_file_path):
         # Si el archivo no existe, descarga el dataset desde Kaggle
-        kaggle.api.dataset_download_files('jealousleopard/goodreadsbooks', path='data/', unzip=True)
+        kaggle.api.dataset_download_files('ishikajohari/best-books-10k-multi-genre-data', path='data/', unzip=True)
     
     # Cargar el archivo CSV descargado
     df = pd.read_csv(csv_file_path)
