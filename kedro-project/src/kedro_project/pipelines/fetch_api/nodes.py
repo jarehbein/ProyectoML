@@ -41,14 +41,22 @@ def preprocess_data(raw_dataset_path: pd.DataFrame) -> pd.DataFrame:
         lambda x: x.encode('utf-8', 'ignore').decode('utf-8') if isinstance(x, str) else x
     )
 
+    # Eliminar la columna innecesaria 'Unnamed: 0'
+    if 'Unnamed: 0' in df.columns:
+        df = df.drop(columns=['Unnamed: 0'])
+        logger.info("Columna 'Unnamed: 0' eliminada.")
+
     # Remover caracteres no imprimibles
     df.replace({r'[^\x00-\x7F]+': ''}, regex=True, inplace=True)
 
     # Normalizar columna 'Genres'
-    df['Genres'] = df['Genres'].apply(lambda x: eval(x)[0] if isinstance(x, str) and eval(x) else 'Unknown')
+    if 'Genres' in df.columns:
+        df['Genres'] = df['Genres'].apply(lambda x: eval(x)[0] if isinstance(x, str) and eval(x) else 'Unknown')
 
     # Limpiar y convertir 'Num_Ratings'
-    df['Num_Ratings'] = df['Num_Ratings'].str.replace(',', '', regex=True).astype(float)
+    if 'Num_Ratings' in df.columns:
+        df['Num_Ratings'] = df['Num_Ratings'].str.replace(',', '', regex=True).astype(float)
+        logger.info("Columna 'Num_Ratings' convertida a numérico.")
 
     # Guardar con manejo de errores
     try:
@@ -59,5 +67,3 @@ def preprocess_data(raw_dataset_path: pd.DataFrame) -> pd.DataFrame:
 
     # Retornar el DataFrame limpio
     return df
-
-

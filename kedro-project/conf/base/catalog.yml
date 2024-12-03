@@ -13,3 +13,13 @@ cleaned_data:
     errors: replace
     index: False
 
+analysis_results:
+  type: pandas.CSVDataset
+  filepath: data/03_primary/analysis_results.csv
+  save_args:
+    encoding: utf-8
+    index: False
+
+business_insights:
+  type: kedro_datasets.json.JSONDataset
+  filepath: data/07_reporting/business_insights.yml
