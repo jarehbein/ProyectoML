@@ -1,24 +1,63 @@
+"""
+This is a boilerplate pipeline 'fetch_api'
+generated using Kedro 0.19.8
+"""
+
 import os
 import pandas as pd
+import kaggle
 import logging
+import re
 
-def download_dataset_from_kaggle():
-    # Define la ruta del directorio y del archivo CSV
-    dataset_dir = "data/01_raw/"
-    dataset_file = os.path.join(dataset_dir, "goodreads_data.csv")
+logger = logging.getLogger(__name__)
 
-    # Verificar si el directorio existe, y si no, crearlo
-    if not os.path.exists(dataset_dir):
-        os.makedirs(dataset_dir)
-        logging.info(f"Directorio {dataset_dir} creado.")
+def download_dataset_from_kaggle() -> str:
+    """
+    Descarga el dataset desde Kaggle si no existe y devuelve la ruta del archivo.
+    """
+    logger.info("Iniciando la descarga del dataset desde Kaggle...")
+    dataset_dir = 'data/01_raw/'
+    dataset_file = os.path.join(dataset_dir, 'goodreads_data.csv')
 
-    # Verificar si el archivo ya existe
     if not os.path.exists(dataset_file):
-        raise FileNotFoundError(
-            f"El archivo {dataset_file} no fue encontrado. Por favor, asegúrate de que esté en la ubicación correcta o descárgalo."
+        kaggle.api.dataset_download_files(
+            'ishikajohari/best-books-10k-multi-genre-data',
+            path=dataset_dir,
+            unzip=True
         )
+        if not os.path.exists(dataset_file):
+            raise FileNotFoundError(f"El archivo {dataset_file} no se encontró después de descargar el dataset.")
+    logger.info(f"Dataset descargado y guardado en: {dataset_file}")
 
-    logging.info(f"El archivo {dataset_file} fue encontrado. Cargando datos...")
+    return dataset_file
 
-    # Leer el archivo CSV con encoding seguro
-    return pd.read_csv(dataset_file, encoding="utf-8", on_bad_lines="skip")
+def preprocess_data(raw_dataset_path: pd.DataFrame) -> pd.DataFrame:
+    print("Leyendo el archivo CSV para preprocesamiento...")
+    df = pd.read_csv(raw_dataset_path, delimiter=',', on_bad_lines='skip')
+    print(f"Columnas encontradas en el archivo CSV: {df.columns}")
+
+    # Asegurar compatibilidad de caracteres
+    df = df.applymap(
+        lambda x: x.encode('utf-8', 'ignore').decode('utf-8') if isinstance(x, str) else x
+    )
+
+    # Remover caracteres no imprimibles
+    df.replace({r'[^\x00-\x7F]+': ''}, regex=True, inplace=True)
+
+    # Normalizar columna 'Genres'
+    df['Genres'] = df['Genres'].apply(lambda x: eval(x)[0] if isinstance(x, str) and eval(x) else 'Unknown')
+
+    # Limpiar y convertir 'Num_Ratings'
+    df['Num_Ratings'] = df['Num_Ratings'].str.replace(',', '', regex=True).astype(float)
+
+    # Guardar con manejo de errores
+    try:
+        df.to_csv("data/02_intermediate/temp_cleaned_data.csv", index=False, encoding="utf-8", errors="replace")
+        print("Archivo guardado correctamente.")
+    except UnicodeEncodeError as e:
+        print("Error de codificación:", e)
+
+    # Retornar el DataFrame limpio
+    return df
+
+
