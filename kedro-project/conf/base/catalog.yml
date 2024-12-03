@@ -22,4 +22,32 @@ analysis_results:
 
 business_insights:
   type: kedro_datasets.json.JSONDataset
-  filepath: data/07_reporting/business_insights.yml
+  filepath: data/08_reporting/business_insights.yml
+
+rf_model:
+  type: pickle.PickleDataset
+  filepath: data/06_models/rf_model.pkl
+
+lr_model:
+  type: pickle.PickleDataset
+  filepath: data/06_models/lr_model.pkl
+
+svc_model:
+  type: pickle.PickleDataset
+  filepath: data/06_models/svc_model.pkl
+
+rf_evaluation:
+  type: pandas.JSONDataset
+  filepath: data/08_reporting/rf_evaluation.json
+
+lr_evaluation:
+  type: pandas.JSONDataset
+  filepath: data/08_reporting/lr_evaluation.json
+
+svc_evaluation:
+  type: pandas.JSONDataset
+  filepath: data/08_reporting/svc_evaluation.json
+
+best_model:
+  type: pandas.JSONDataset
+  filepath: data/08_reporting/best_model.json
